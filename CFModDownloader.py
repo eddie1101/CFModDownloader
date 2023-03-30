@@ -12,8 +12,7 @@ def get_CFL_HTML(projectID, fileID):
         return None
 
 
-def get_CF_slug(projectID, fileID):
-    html = get_CFL_HTML(projectID, fileID)
+def get_CF_slug(html):
     if html is None:
         return None
     soup = BeautifulSoup(html, 'html.parser')
@@ -33,10 +32,11 @@ def main():
 
     files = j['files']
     for file in files:
-        projectID, fileID = file['projectID'], file['fileID'] 
-        slug = get_CF_slug(projectID, fileID)
+        projectID, fileID = file['projectID'], file['fileID']
+        html = get_CFL_HTML(projectID, fileID)
+        slug = get_CF_slug(html)
         if slug is None:
-            print(f'Could not find mod:\n\tProject ID: {projectID}\n\tFile ID: {fileID}')
+            print(f'Could not find mod (it\'s probably a resource pack). Try plugging these numbers into www.cflookup.com:\n\tProject ID: {projectID}\n\tFile ID: {fileID}')
         else:
             download_link = f'https://www.curseforge.com/minecraft/mc-mods/{slug}/download/{fileID}'
             print(f'Downloading {slug} ({download_link})...')
