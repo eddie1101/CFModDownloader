@@ -4,8 +4,8 @@ import webbrowser as web
 from bs4 import BeautifulSoup
 
 
-def get_CFL_HTML(projectID, fileID):
-    r = requests.get(f'https://cflookup.com/{projectID}?fileId={fileID}')
+def get_CFL_HTML(project_id, file_id):
+    r = requests.get(f'https://cflookup.com/{project_id}?fileId={file_id}')
     if r.status_code == 200:
         return r.text
     else:
@@ -25,20 +25,21 @@ def get_CF_slug(html):
 def main():
     j = None
     try:
-        j = json.loads(open('manifest.json', 'r').read())
+        with open('manifest.json', 'r') as manifest:
+            j = json.loads(manifest.read())
     except:
         print("Manifest not found. Make sure to place the modpack's manifest.json file in the script directory.")
         sys.exit()
 
     files = j['files']
     for file in files:
-        projectID, fileID = file['projectID'], file['fileID']
-        html = get_CFL_HTML(projectID, fileID)
+        project_id, file_id = file['projectID'], file['fileID']
+        html = get_CFL_HTML(project_id, file_id)
         slug = get_CF_slug(html)
         if slug is None:
-            print(f'Could not find mod. Try plugging these numbers into www.cflookup.com:\n\tProject ID: {projectID}\n\tFile ID: {fileID}')
+            print(f'Could not find mod. Try plugging these numbers into www.cflookup.com:\n\tProject ID: {project_id}\n\tFile ID: {file_id}')
         else:
-            download_link = f'https://www.curseforge.com/minecraft/{"texture-packs" if slug[1] else "mc-mods"}/{slug[0]}/download/{fileID}'
+            download_link = f'https://www.curseforge.com/minecraft/{"texture-packs" if slug[1] else "mc-mods"}/{slug[0]}/download/{file_id}'
             print(f'Downloading {slug[0]} ({download_link})...')
             web.open(download_link)
 
