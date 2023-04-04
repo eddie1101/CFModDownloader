@@ -70,7 +70,7 @@ def main():
         print("Manifest is malformed. Did you bungle it up somehow?")
         sys.exit()
     except FileNotFoundError as fnfe:
-        print("Manifest not found. Make sure to place the modpack's manifest.json file in the script directory.")
+        print("Manifest not found. Are you sure you provided the path to the right zip file?")
         sys.exit()
 
     #Retrieve file IDs and project IDs

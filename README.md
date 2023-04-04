@@ -25,6 +25,6 @@ Always use absolute paths.
 This is a terrible way to do this. It could be improved but I don't care. It may be faster than downloading the mods manually, but at what cost?
 Be aware that if you're downloading a modpack with 300 mods, this script will open 300 browser tabs :/
 
-I spent maybe 10 minutes on this. If it doesn't work, sorry ¯\\_(ツ)_/¯
+I spent maybe a couple hours on this. If it doesn't work, sorry ¯\\_(ツ)_/¯
 
 It also might not work at all if [CFLookup](https://cflookup.com/) changes.
