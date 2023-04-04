@@ -14,9 +14,12 @@ This solution is still (very) shitty, but IMO it's worth avoiding the mental ang
 5. Wait for downloads to finish
 
 ## Usage
-`py CFModDownloader.y {Install Directory} {Daemon Duration}`
-- (Optional) Install Directory: The path to where you want the modpack files to be saved to
-- (Optional) Daemon Duration: How long (in seconds) the daemon which moves downloads into the install directory will stay awake for. If you have slow download speeds, set to a higher number. Install directory argument must be present. Default 10.
+`py CFModDownloader.y modpack-zip {Install-Directory} {Daemon-Duration}`
+- modpack-zip: The path to the modpack .zip downloaded from CurseForge.
+- (Optional) Install-Directory: The path to where you want the modpack files to be saved to.
+- (Optional) Daemon-Duration: How long (in seconds) the daemon which moves downloads into the install directory will stay awake for. If you have slow download speeds, set to a higher number. Install directory argument must be present. Default 10.
+
+Always use absolute paths.
 
 ## Disclaimer
 This is a terrible way to do this. It could be improved but I don't care. It may be faster than downloading the mods manually, but at what cost?
