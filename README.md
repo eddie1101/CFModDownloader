@@ -28,3 +28,5 @@ Be aware that if you're downloading a modpack with 300 mods, this script will op
 I spent maybe a couple hours on this. If it doesn't work, sorry ¯\\_(ツ)_/¯
 
 It also might not work at all if [CFLookup](https://cflookup.com/) changes.
+
+Excessive usage may cause Curseforge to prompt you with a captcha, blocking further downloads until completed. 

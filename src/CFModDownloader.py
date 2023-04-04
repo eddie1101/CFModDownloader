@@ -39,6 +39,9 @@ def check_dirs(install_dir):
     if not os.path.exists(resourcespacks_dir):
         os.mkdir(resourcespacks_dir)
 
+    if not os.path.exists('../temp'):
+        os.mkdir('../temp')
+
 
 def main():
 
@@ -47,14 +50,19 @@ def main():
         #Start watchdog to move downloads into install directory
         install_dir = sys.argv[2]
         check_dirs(install_dir)
-        downloads_dir = str(Path.home() / "Downloads")
+
         logger = logging.getLogger(LOGGER_NAME)
         logger.setLevel(logging.DEBUG)
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setLevel(logging.DEBUG)
+        logger.addHandler(handler)
+
+        downloads_dir = str(Path.home() / "Downloads")
         watchdog = Thread(target=start_watchdog_thread, args=(install_dir, downloads_dir, logger), daemon=True, name="Watchdog")
         watchdog.start()
 
         if len(sys.argv) > 3:
-            daemon_duration = int(sys.argv[2])
+            daemon_duration = int(sys.argv[3])
     #Else, run in dumb mode, let the user handle the downloads
 
     #Extract manifest.json and overrides
@@ -90,16 +98,27 @@ def main():
             print(f'Downloading {slug[0]} ({download_link})...')
             web.open(download_link)
 
-    overrides_dir = '../temp/overrides'
-    overrides = os.listdir(overrides_dir)
-    for o in overrides:
-        shutil.move(overrides_dir + f'/{o}', install_dir)
+    #Copy overrides into installation
+    overrides_dir = os.path.abspath('../temp/overrides')
+    for src_dir, dirs, files in os.walk(overrides_dir):
+        dst_dir = src_dir.replace(overrides_dir, install_dir, 1)
+        if not os.path.exists(dst_dir):
+            os.makedirs(dst_dir)
+        for file_ in files:
+            src_file = os.path.join(src_dir, file_)
+            dst_file = os.path.join(dst_dir, file_)
+            if os.path.exists(dst_file):
+                os.remove(dst_file)
+            shutil.copy(src_file, dst_dir)
+
+    os.rmdir('../temp')
     
     #Countdown watchdog sleep (hopefully everything will be done downloading by then)
     if watchdog is not None:
         for x in range(daemon_duration):
             print(f'Watchdog will continue monitoring for downloads for ({daemon_duration - (x + 1)}) seconds. Press ctrl+C to end now.', end='\r')
             time.sleep(1)
+    
     # watchdog.join()
     print()
 

@@ -40,12 +40,13 @@ class DownloadHandler(FileSystemEventHandler):
     
     def on_created(self, event):
         src = event.src_path
-        self.logger.log(logging.DEBUG, src)
 
         #Move file to appropriate folder based on whether it is a mod or resource pack
         if src.endswith(".zip") or src.endswith(".jar"):
-            shutil.move(src, self.mods_dir if src.endswith(".jar") else self.resourcepacks_dir)
-
+            dst = self.mods_dir if src.endswith(".jar") else self.resourcepacks_dir
+            self.logger.log(level=logging.DEBUG, msg='Watchdog found: %s, moving to %s' %(src.split('\\')[-1], dst))
+            shutil.move(src, dst)
+            
 
 def start_watchdog_thread(install_dir, downloads_dir, logger):
     Watcher(downloads_dir, DownloadHandler(install_dir, logger), logger).run()
