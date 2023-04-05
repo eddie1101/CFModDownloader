@@ -6,7 +6,7 @@ from pathlib import Path
 
 from bs4 import BeautifulSoup
 
-from Watchdog import start_watchdog_thread, LOGGER_NAME
+from Watchdog import Watchdog, DownloadHandler, LOGGER_NAME
 
 
 def get_CFL_HTML(project_id, file_id):
@@ -45,7 +45,7 @@ def check_dirs(install_dir):
 
 def main():
 
-    watchdog, daemon_duration = None, 10
+    watchdog, daemon_duration = None, 30
     if len(sys.argv) > 2:
         #Start watchdog to move downloads into install directory
         install_dir = sys.argv[2]
@@ -53,12 +53,13 @@ def main():
 
         logger = logging.getLogger(LOGGER_NAME)
         logger.setLevel(logging.DEBUG)
-        handler = logging.StreamHandler(sys.stdout)
-        handler.setLevel(logging.DEBUG)
-        logger.addHandler(handler)
+        stream_handler = logging.StreamHandler(sys.stdout)
+        stream_handler.setLevel(logging.DEBUG)
+        logger.addHandler(stream_handler)
 
         downloads_dir = str(Path.home() / "Downloads")
-        watchdog = Thread(target=start_watchdog_thread, args=(install_dir, downloads_dir, logger), daemon=True, name="Watchdog")
+        download_handler = DownloadHandler(install_dir, logger)
+        watchdog = Watchdog(downloads_dir, download_handler, logger)
         watchdog.start()
 
         if len(sys.argv) > 3:
@@ -111,7 +112,7 @@ def main():
                 os.remove(dst_file)
             shutil.copy(src_file, dst_dir)
 
-    os.rmdir('../temp')
+    shutil.rmtree('../temp')
     
     #Countdown watchdog sleep (hopefully everything will be done downloading by then)
     if watchdog is not None:
@@ -119,7 +120,8 @@ def main():
             print(f'Watchdog will continue monitoring for downloads for ({daemon_duration - (x + 1)}) seconds. Press ctrl+C to end now.', end='\r')
             time.sleep(1)
     
-    # watchdog.join()
+    watchdog.stop()
+    watchdog.join()
     print()
 
 if __name__ == '__main__':

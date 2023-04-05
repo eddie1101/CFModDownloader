@@ -17,7 +17,7 @@ This solution is still (very) shitty, but IMO it's worth avoiding the mental ang
 `py CFModDownloader.y modpack-zip {Install-Directory} {Daemon-Duration}`
 - modpack-zip: The path to the modpack .zip downloaded from CurseForge.
 - (Optional) Install-Directory: The path to where you want the modpack files to be saved to.
-- (Optional) Daemon-Duration: How long (in seconds) the daemon which moves downloads into the install directory will stay awake for. If you have slow download speeds, set to a higher number. Install directory argument must be present. Default 10.
+- (Optional) Daemon-Duration: How long (in seconds) the daemon which moves downloads into the install directory will stay awake for. If you have slow download speeds, set to a higher number. Install directory argument must be present. Default 30.
 
 Always use absolute paths.
 
