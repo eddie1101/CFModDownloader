@@ -8,7 +8,7 @@ LOGGER_NAME = "Watchdog Log"
 
 class Watchdog(threading.Thread):
 
-    def __init__(self, directory=".", handler=FileSystemEventHandler(), logger = logging.getLogger(LOGGER_NAME)):
+    def __init__(self, directory, handler, logger):
         super().__init__()
         self.observer = Observer()
         self.handler = handler
@@ -24,14 +24,11 @@ class Watchdog(threading.Thread):
         try:
             while not self.stop_flag:
                 time.sleep(1)
-            self.logger.log(level=logging.DEBUG, msg="Watchdog Received Stop Signal\n")
+            self.logger.log(level=logging.DEBUG, msg="\nWatchdog Received Stop Signal\n")
         except:
             pass
         self.observer.stop()
         self.observer.join()
-        # while(self.observer.is_alive()):
-        #     time.sleep(0.5)
-        #     self.logger.log(level=logging.DEBUG, msg="\nWaiting for Observer to Join\n")
         self.logger.log(level=logging.DEBUG, msg="Watchdog Terminated\n")
 
     def stop(self):
@@ -40,7 +37,7 @@ class Watchdog(threading.Thread):
 
 class DownloadHandler(FileSystemEventHandler):
 
-    def __init__(self, target_dir, logger = logging.getLogger(LOGGER_NAME)):
+    def __init__(self, target_dir, logger):
         super().__init__()
         self.target_dir = target_dir
         self.logger = logger
@@ -49,18 +46,13 @@ class DownloadHandler(FileSystemEventHandler):
     
     def on_created(self, event):
         src = event.src_path
+        if src.endswith('.jar') or src.endswith('.zip'):
+            dst = self.mods_dir if src.endswith('.jar') else self.resourcepacks_dir
+            self.logger.log(level=logging.DEBUG, msg=f'Watchdog found: {src} | Moving to installation folder when download is complete.')
+            thread.start_new_thread(self.move_file_timer, (src, dst))
 
-        #Move file to appropriate folder based on whether it is a mod or resource pack
-        if src.endswith(".zip") or src.endswith(".jar"):
-            dst = self.mods_dir if src.endswith(".jar") else self.resourcepacks_dir
-            self.logger.log(level=logging.DEBUG, msg='Watchdog found: %s, moving to %s' %(src.split('\\')[-1], dst))
-            thread.start_new_thread(move_file, (src, dst))
-
-
-def move_file(src, dst):
-    #Give time for the system to finalize download and relinquish lock
-    file_size = -1
-    while file_size != os.path.getsize(src):
-        file_size = os.path.getsize(src)
-        time.sleep(10)
-    shutil.move(src, dst)
+    def move_file_timer(self, src, dst):
+        #Give time for the system to finalize download and relinquish lock
+        while os.path.getsize(src) == 0:
+            time.sleep(2)
+        shutil.move(src, dst)

@@ -1,4 +1,4 @@
-import sys, json, requests, os, time, zipfile, shutil
+import sys, json, requests, os, time, zipfile, shutil, argparse
 import webbrowser as web
 import logging
 from threading import Thread
@@ -42,14 +42,24 @@ def check_dirs(install_dir):
     if not os.path.exists('../temp'):
         os.mkdir('../temp')
 
-
 def main():
 
-    watchdog, daemon_duration = None, 30
-    if len(sys.argv) > 2:
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('modpack_path')
+    parser.add_argument('-i', '--install')
+    parser.add_argument('-d', '--duration', type=int, default=30)
+
+    args = parser.parse_args()
+
+    modpack_path = args.modpack_path
+    install_path = args.install
+    watchdog_duration = args.duration
+
+    watchdog = None
+    if install_path is not None:
         #Start watchdog to move downloads into install directory
-        install_dir = sys.argv[2]
-        check_dirs(install_dir)
+        check_dirs(install_path)
 
         logger = logging.getLogger(LOGGER_NAME)
         logger.setLevel(logging.DEBUG)
@@ -58,16 +68,14 @@ def main():
         logger.addHandler(stream_handler)
 
         downloads_dir = str(Path.home() / "Downloads")
-        download_handler = DownloadHandler(install_dir, logger)
+
+        download_handler = DownloadHandler(install_path, logger)
         watchdog = Watchdog(downloads_dir, download_handler, logger)
         watchdog.start()
-
-        if len(sys.argv) > 3:
-            daemon_duration = int(sys.argv[3])
     #Else, run in dumb mode, let the user handle the downloads
 
     #Extract manifest.json and overrides
-    with zipfile.ZipFile(sys.argv[1], 'r') as zip:
+    with zipfile.ZipFile(modpack_path, 'r') as zip:
         zip.extractall('../temp')
 
     #Extract file IDs from manifest.json
@@ -98,30 +106,32 @@ def main():
             download_link = f'https://www.curseforge.com/minecraft/{"texture-packs" if slug[1] else "mc-mods"}/{slug[0]}/download/{file_id}'
             print(f'Downloading {slug[0]} ({download_link})...')
             web.open(download_link)
+                
 
     #Copy overrides into installation
-    overrides_dir = os.path.abspath('../temp/overrides')
-    for src_dir, dirs, files in os.walk(overrides_dir):
-        dst_dir = src_dir.replace(overrides_dir, install_dir, 1)
-        if not os.path.exists(dst_dir):
-            os.makedirs(dst_dir)
-        for file_ in files:
-            src_file = os.path.join(src_dir, file_)
-            dst_file = os.path.join(dst_dir, file_)
-            if os.path.exists(dst_file):
-                os.remove(dst_file)
-            shutil.copy(src_file, dst_dir)
+    if install_path is not None:
+        overrides_dir = os.path.abspath('../temp/overrides')
+        for src_dir, dirs, files in os.walk(overrides_dir):
+            dst_dir = src_dir.replace(overrides_dir, install_path, 1)
+            if not os.path.exists(dst_dir):
+                os.makedirs(dst_dir)
+            for file_ in files:
+                src_file = os.path.join(src_dir, file_)
+                dst_file = os.path.join(dst_dir, file_)
+                if os.path.exists(dst_file):
+                    os.remove(dst_file)
+                shutil.copy(src_file, dst_dir)
 
     shutil.rmtree('../temp')
     
     #Countdown watchdog sleep (hopefully everything will be done downloading by then)
     if watchdog is not None:
-        for x in range(daemon_duration):
-            print(f'Watchdog will continue monitoring for downloads for ({daemon_duration - (x + 1)}) seconds. Press ctrl+C to end now.', end='\r')
+        for x in range(watchdog_duration):
+            print(f'Watchdog will continue monitoring for downloads for ({watchdog_duration - (x + 1)}) seconds. Press ctrl+C to end now.', end='\r')
             time.sleep(1)
-    
-    watchdog.stop()
-    watchdog.join()
+        watchdog.stop()
+        watchdog.join()
+
     print()
 
 if __name__ == '__main__':
