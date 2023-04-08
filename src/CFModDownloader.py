@@ -56,6 +56,26 @@ def main():
     install_path = args.install
     watchdog_duration = args.duration
 
+
+    
+    #Extract manifest.json and overrides
+    j = None
+    try:
+        with zipfile.ZipFile(modpack_path, 'r') as zip:
+            zip.extractall('../temp')
+        with open('../temp/manifest.json', 'r') as manifest:
+            j = json.loads(manifest.read())
+    except ValueError as ve:
+        print("Manifest is malformed. Did you bungle it up somehow?")
+        sys.exit()
+    except FileNotFoundError as fnfe:
+        print("Manifest not found. Are you sure you provided the path to the right zip file?")
+        sys.exit()
+
+    print(f'Modpack Found: {j["name"]}')
+    print(f'Minecraft Version: {j["minecraft"]["version"]}')
+    print(f'Modloader Version: {j["minecraft"]["modLoaders"][0]["id"]}')
+
     watchdog = None
     if install_path is not None:
         #Start watchdog to move downloads into install directory
@@ -73,22 +93,6 @@ def main():
         watchdog = Watchdog(downloads_dir, download_handler, logger)
         watchdog.start()
     #Else, run in dumb mode, let the user handle the downloads
-
-    #Extract manifest.json and overrides
-    with zipfile.ZipFile(modpack_path, 'r') as zip:
-        zip.extractall('../temp')
-
-    #Extract file IDs from manifest.json
-    j = None
-    try:
-        with open('../temp/manifest.json', 'r') as manifest:
-            j = json.loads(manifest.read())
-    except ValueError as ve:
-        print("Manifest is malformed. Did you bungle it up somehow?")
-        sys.exit()
-    except FileNotFoundError as fnfe:
-        print("Manifest not found. Are you sure you provided the path to the right zip file?")
-        sys.exit()
 
     #Retrieve file IDs and project IDs
     files = j['files']

@@ -52,7 +52,7 @@ class DownloadHandler(FileSystemEventHandler):
             thread.start_new_thread(self.move_file_timer, (src, dst))
 
     def move_file_timer(self, src, dst):
-        #Give time for the system to finalize download and relinquish lock
+        #Give time for the browser to finalize and flush download buffer
         while os.path.getsize(src) == 0:
             time.sleep(2)
         shutil.move(src, dst)
