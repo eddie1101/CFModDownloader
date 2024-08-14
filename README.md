@@ -8,13 +8,14 @@ This solution is still (very) shitty, but IMO it's worth avoiding the mental ang
 
 ## Set-Up
 1. Set firefox as your default browser (this only works with firefox. Other browsers are too slow and cannot handle the hundreds of tabs that this script opens)
-2. `pip install -r requirements.txt`
-3. Place the manifest.json of the modpack you want to download in the script directory (ensure it is named exactly "manifest.json")
-4. Run the script
-5. Wait for downloads to finish
+2. (Optional, but highly recommended) Install the uBlock Origin extension for firefox.
+3. Install python 3.9 (recommended to create a venv)
+4. `pip install -r requirements.txt`
+5. Run the script (see [Usage](#usage) below)
+6. Wait for downloads to finish
 
 ## Usage
-`py CFModDownloader.y modpack-zip {Install-Directory} {Watchdog-Duration}`
+`py CFModDownloader.py modpack-zip {-i Install-Directory} {-d Watchdog-Duration}`
 - modpack-zip: The path to the modpack .zip downloaded from CurseForge.
 - (Optional) Install-Directory: The path to where you want the modpack files to be saved to.
 - (Optional) Watchdog-Duration: How long (in seconds) the daemon which moves downloads into the install directory will stay awake for. If you have slow download speeds, set to a higher number. Install directory argument must be present. Default 30.
